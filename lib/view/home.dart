@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mapgoogle/model/direction_model.dart';
+import 'package:mapgoogle/service/direction_service.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -21,9 +23,9 @@ class _HomeViewState extends State<HomeView> {
   //* Create Marker for marking
   Marker? _origin;
   Marker? _destination;
-
+  Directions? _info;
   //* Create a marker function to add and remove markers
-  void _addMarker(LatLng position) {
+  void _addMarker(LatLng position) async {
     if (_origin == null || (_origin != null && _destination != null)) {
       // * origin in not set OR both origin and destination is set
       // * set origin
@@ -39,6 +41,8 @@ class _HomeViewState extends State<HomeView> {
         );
         // * reset destination
         _destination = null;
+        // * Reset info when user select origin
+        _info = null;
       });
     } else {
       // * origin is already set
@@ -56,6 +60,10 @@ class _HomeViewState extends State<HomeView> {
           );
         },
       );
+      // * Get direction
+      final directions = await RemoteDirectionService().getDirections(
+          origin: _origin!.position, destination: _destination!.position);
+      setState(() => _info = directions);
     }
   }
 
@@ -121,25 +129,66 @@ class _HomeViewState extends State<HomeView> {
           foregroundColor: Colors.white,
           backgroundColor: Colors.green,
           onPressed: () => _googleMapController!.animateCamera(
-            CameraUpdate.newCameraPosition(
-              _initialCameraPosition,
-            ),
+            _info != null
+                ? CameraUpdate.newLatLngBounds(
+                    _info!.bounds!,
+                    100.0,
+                  )
+                : CameraUpdate.newCameraPosition(_initialCameraPosition),
           ),
           child: const Icon(Icons.center_focus_strong),
         ),
 
-        body: GoogleMap(
-          compassEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          initialCameraPosition: _initialCameraPosition,
-          onMapCreated: (controller) => _googleMapController = controller,
-          markers: {
-            if (_origin != null) _origin!,
-            if (_destination != null) _destination!,
-          },
-          onTap: _addMarker,
-        ),
+        body: Stack(alignment: Alignment.center, children: [
+          GoogleMap(
+            compassEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            initialCameraPosition: _initialCameraPosition,
+            onMapCreated: (controller) => _googleMapController = controller,
+            markers: {
+              if (_origin != null) _origin!,
+              if (_destination != null) _destination!,
+            },
+            polygons: {
+              if (_info != null)
+                Polygon(
+                    polygonId: const PolygonId('overview_polyline'),
+                    fillColor: Colors.redAccent,
+                    strokeWidth: 3,
+                    points: _info!.polylinePoints!
+                        .map((e) => LatLng(e.latitude, e.longitude))
+                        .toList()),
+            },
+            onTap: _addMarker,
+          ),
+          if (_info != null)
+            Positioned(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(0, 2),
+                      blurRadius: 6.2,
+                    )
+                  ],
+                ),
+                child: Text(
+                  '${_info!.totalDistance}, ${_info!.totalDuration}',
+                  style: const TextStyle(
+                    color: Colors.lightBlueAccent,
+                    fontSize: 19.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ]),
       ),
     );
   }
