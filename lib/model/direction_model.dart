@@ -17,11 +17,10 @@ class Directions {
 
   factory Directions.fromMap(Map<String, dynamic> map) {
     // Check if route is not available
-    if ((map['route'] as List).isEmpty) return Directions();
+    if ((map['routes'] as List).isEmpty) return Directions();
 
     // Get route information
     final data = Map<String, dynamic>.from(map['routes'][0]);
-
     // Bounds
     final northeast = data['bounds']['northeast'];
     final southeast = data['bounds']['southeast'];
@@ -41,8 +40,7 @@ class Directions {
 
     return Directions(
       bounds: bounds,
-      polylinePoints:
-          PolylinePoints().decodePolyline(data['overview_polyline']['points']),
+      polylinePoints: data['overview_polyline']['points'],
       totalDistance: distance,
       totalDuration: duration,
     );

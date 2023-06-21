@@ -19,6 +19,9 @@ class RemoteDirectionService {
         'destination': '${destination.latitude}, ${destination.longitude}',
         'key': googleAPIKey,
       });
+      debugPrint('nirajan');
+      debugPrint(response.toString());
+      debugPrint(response.statusCode.toString());
       if (response.statusCode == 200) {
         return Directions.fromMap(response.data);
       } else {

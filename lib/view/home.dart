@@ -4,7 +4,7 @@ import 'package:mapgoogle/model/direction_model.dart';
 import 'package:mapgoogle/service/direction_service.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  const HomeView({Key? key}) : super(key: key);
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -31,6 +31,7 @@ class _HomeViewState extends State<HomeView> {
       // * set origin
       setState(() {
         _origin = Marker(
+          flat: true,
           draggable: true,
           infoWindow: const InfoWindow(title: 'Origin'),
           markerId: const MarkerId('origin'),
@@ -50,6 +51,7 @@ class _HomeViewState extends State<HomeView> {
       setState(
         () {
           _destination = Marker(
+            flat: true,
             draggable: true,
             infoWindow: const InfoWindow(title: 'Destination'),
             markerId: const MarkerId('destination'),
@@ -87,8 +89,8 @@ class _HomeViewState extends State<HomeView> {
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
                       target: _origin!.position,
-                      tilt: 16.5,
-                      zoom: 15.2,
+                      tilt: 22.5,
+                      zoom: 17.2,
                     ),
                   ),
                 ),
@@ -105,8 +107,8 @@ class _HomeViewState extends State<HomeView> {
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
                       target: _destination!.position,
-                      tilt: 16.5,
-                      zoom: 15.2,
+                      tilt: 22.5,
+                      zoom: 17.2,
                     ),
                   ),
                 ),
@@ -141,7 +143,7 @@ class _HomeViewState extends State<HomeView> {
 
         body: Stack(alignment: Alignment.center, children: [
           GoogleMap(
-            compassEnabled: true,
+            compassEnabled: false,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             initialCameraPosition: _initialCameraPosition,
@@ -150,20 +152,24 @@ class _HomeViewState extends State<HomeView> {
               if (_origin != null) _origin!,
               if (_destination != null) _destination!,
             },
-            polygons: {
-              if (_info != null)
-                Polygon(
-                    polygonId: const PolygonId('overview_polyline'),
-                    fillColor: Colors.redAccent,
-                    strokeWidth: 3,
+            polylines: {
+              if (_info != null && _info!.polylinePoints != null)
+                Polyline(
+                    polylineId: const PolylineId('overview_polyline'),
+                    color: Colors.red,
+                    width: 2,
                     points: _info!.polylinePoints!
-                        .map((e) => LatLng(e.latitude, e.longitude))
+                        .map((e) => LatLng(
+                              e.latitude,
+                              e.longitude,
+                            ))
                         .toList()),
             },
             onTap: _addMarker,
           ),
           if (_info != null)
             Positioned(
+              top: 16,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
