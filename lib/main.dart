@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mapgoogle/view/home.dart';
 // import 'package:mapgoogle/view/home.dart';
 import 'package:mapgoogle/view/home_view.dart';
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeViewPage(),
+      home: const HomeView(),
     );
   }
 }
